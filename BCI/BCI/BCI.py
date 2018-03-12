@@ -8,8 +8,15 @@ from sklearn.model_selection import KFold
 
 import os
 
+import RCNN
+
+from keras.callbacks import EarlyStopping
+
+csp_val = 20
+shape = (5, 4, 6)
+
 def loader(file, mode):
-  fx = open(file + '_' + mode + '__x.csv')
+  fx = open(file + '_' + mode + '__' + str(csp_val) + '_x.csv')
   lines = fx.readlines()
   fx.close()
 
@@ -23,7 +30,7 @@ def loader(file, mode):
   x = np.array(x)
   x = np.transpose(x)
 
-  fy = open(file + '_' + mode + '__y.csv')
+  fy = open(file + '_' + mode + '__' + str(csp_val) + '_y.csv')
   lines = fy.readlines()
   fy.close()
 
@@ -81,6 +88,12 @@ def create_bCNN():
   model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['binary_accuracy'])
   return model
 
+def create_tRCNN():
+  model = RCNN.makeModel(18, 6, 3, 3)
+  model.compile(loss = 'categorical_crossentropy', optimizer = 'adam', metrics = ['categorical_accuracy'])
+  return model
+
+
 def create_SVM():
   clf = svm.SVC()
   return clf
@@ -94,26 +107,37 @@ def transition_y(y):
     n_y.append(y[i][0])
   return n_y
 
+
 def one_routine(path, file, mode):
   os.chdir(path)
   nf = get_file_name(file)
   x, y = loader(nf, mode)
-  kf = KFold(n_splits=5, shuffle=True)
+  kf = KFold(n_splits=20, shuffle=True)
   kv = kf.split(x)
   acc = []
   for train_idx, test_idx in kv:
     x_train, x_test = x[train_idx], x[test_idx]
     y_train, y_test = y[train_idx], y[test_idx]
-    DNN = create_tDNN()
-    DNN.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=50000)
+    DNN = RCNN.create_model(csp_val=csp_val)
+    x_train = x_train.reshape((x_train.shape[0], 5, 6, 4))
+    x_test = x_test.reshape((x_test.shape[0], 5, 6, 4))
+
+    epoch = 10000
+    es = EarlyStopping(monitor='val_acc', patience=500, mode='auto')
+    DNN.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch, callbacks=[es])
     metrics = DNN.evaluate(x_test, y_test)
     
     for i in range(len(DNN.metrics_names)):
-      if (str(DNN.metrics_names[i]) == 'binary_accuracy'):
+      if (str(DNN.metrics_names[i]) == 'acc'):
         acc.append(metrics[i])
       if (str(DNN.metrics_names[i]) == 'categorical_accuracy'):
         acc.append(metrics[i])
       print(str(DNN.metrics_names[i]) + ": " + str(metrics[i]))
-  pen = open('../result_'+mode+'_S2_50000.csv', 'a')
-  pen.write(nf + ',' + mode + ',DNN,' + str(sum(acc) / float(len(acc)))+'\n')
+  pen = open('../result_S2_'+mode+'.' + str(csp_val) + '.csv', 'a')
+  pen.write(nf + ',' + mode + ',RCNN_es3_dr_4,' + str(epoch) + ',' + str(sum(acc) / float(len(acc)))+'\n')
   pen.close()
+
+  pen2 = open('../result_S2_detailv_'+mode+'.' + str(csp_val) + '.csv', 'a')
+  for accs in acc:
+    pen2.write(nf + ',' + mode + ',RCNN_es3_dr,' + str(epoch) + ',' + str(acc)+'\n')
+  pen2.close()
