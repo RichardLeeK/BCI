@@ -31,6 +31,9 @@
     <Compile Include="RCNN.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="RSA.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="{c0c9df3d-f76e-4ea8-97fc-84166650af83}\3.5" />

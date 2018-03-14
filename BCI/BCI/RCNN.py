@@ -35,14 +35,14 @@ def RCL_block(l_settings, l, pool=True):
     stack15 = PReLU()(stack14)
     if pool:
       stack15 = MaxPool2D((2, 2), padding='same')(stack15)
-    stack16 = stack15
-    #stack16 = Dropout(0.4)(stack15)
+    #stack16 = stack15
+    stack16 = Dropout(0.4)(stack15)
             
     return stack16
 
 
-def create_model(csp_val=3, output_dim=3, nb_layer=4):
-  input = Input(shape=(5, 6, 4))
+def create_model(csp_val=3, output_dim=3, nb_layer=3):
+  input = Input(shape=(100, 6, 3))
   conv = Conv2D(128, (4, 4), padding='same', activation='relu')
   l = conv(input)
 
@@ -52,7 +52,6 @@ def create_model(csp_val=3, output_dim=3, nb_layer=4):
     else:
       l = RCL_block(conv, l, pool=True)
     print(i)
-  l = Dropout(0.2)(l)
   out = Flatten()(l)
   out = Dense(3, activation='softmax')(out)
   model = Model(input = input, output = out)
