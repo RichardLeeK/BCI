@@ -26,6 +26,12 @@
     <Compile Include="main.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="RCNN.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RSA.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>
