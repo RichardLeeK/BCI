@@ -11,6 +11,7 @@ import os
 import RCNN
 
 from keras.callbacks import EarlyStopping
+import pickle
 
 csp_val = 'raw'
 shape = (5, 4, 6)
@@ -143,3 +144,33 @@ def one_routine(path, file, mode):
   for accs in acc:
     pen2.write(nf + ',' + mode + ',RCNN_raw_1,' + str(epoch) + ',' + str(acc)+'\n')
   pen2.close()
+
+def routine_from_npy(n_feature=64):
+  file = open('res/'+str(n_feature)+'.pic', 'rb')
+  dat = pickle.load(file)
+  file.close()
+  for k, v in dat.items():
+    model = RCNN.create_model(csp_val=csp_val)
+    x = v['x']; y = v['y']
+    kf = KFold(n_splits=20, shuffle=True)
+    kv = kf.split(x)
+    acc = []
+    for train_idx, test_idx in kv:
+      x_train, x_test = x[train_idx], x[test_idx]
+      y_train, y_test = y[train_idx], y[test_idx]
+      DNN = RCNN.create_model(csp_val=csp_val)
+      x_train = x_train.reshape((x_train.shape[0], 4, 4, 4))
+      x_test = x_test.reshape((x_test.shape[0], 4, 4, 4))
+      epoch = 10000
+      es = EarlyStopping(monitor='val_acc', patience=500, mode='auto')
+      DNN.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch, callbacks=[es], batch_size=1)
+      metrics = DNN.evaluate(x_test, y_test)
+      for i in range(len(DNN.metrics_names)):
+        if (str(DNN.metrics_names[i]) == 'acc'):
+          acc.append(metrics[i])
+        if (str(DNN.metrics_names[i]) == 'categorical_accuracy'):
+          acc.append(metrics[i])
+        print(str(DNN.metrics_names[i]) + ": " + str(metrics[i]))
+    pen = open('../result_pca.csv', 'a')
+    pen.write(nf + ',' + ',RCNN_raw_1,' + str(n_feature) + ',' + str(epoch) + ',' + str(sum(acc) / float(len(acc)))+'\n')
+    pen.close()

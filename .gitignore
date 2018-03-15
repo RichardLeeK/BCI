@@ -99,3 +99,10 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# data
+.csv
+.npy
+.pic
+/BCI/BCI/dat
+/BCI/BCI/res

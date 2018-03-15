@@ -41,9 +41,9 @@ def RCL_block(l_settings, l, pool=True):
     return stack16
 
 
-def create_model(csp_val=3, output_dim=3, nb_layer=3):
-  input = Input(shape=(100, 6, 3))
-  conv = Conv2D(128, (4, 4), padding='same', activation='relu')
+def create_model(csp_val=3, output_dim=3, nb_layer=2):
+  input = Input(shape=(4, 4, 4))
+  conv = Conv2D(128, (3, 3), padding='same', activation='relu')
   l = conv(input)
 
   for i in range(nb_layer):
