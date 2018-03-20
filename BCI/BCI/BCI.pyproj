@@ -12,6 +12,8 @@
     <OutputPath>.</OutputPath>
     <Name>BCI</Name>
     <RootNamespace>BCI</RootNamespace>
+    <InterpreterId>{c0c9df3d-f76e-4ea8-97fc-84166650af83}</InterpreterId>
+    <InterpreterVersion>3.5</InterpreterVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,6 +31,9 @@
     <Compile Include="main.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MPA.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="RCNN.py">
       <SubType>Code</SubType>
     </Compile>
@@ -36,7 +41,9 @@
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <InterpreterReference Include="{c0c9df3d-f76e-4ea8-97fc-84166650af83}\3.5" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
   </PropertyGroup>

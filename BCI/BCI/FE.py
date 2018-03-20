@@ -56,5 +56,5 @@ def n_feature_batch(path, n_feature=64):
   fff.close()
 
 if __name__=='__main__':
-  #n_feature_batch('dat/', n_feature=2048)
-  BCI.routine_from_npy(64)
+  #n_feature_batch('dat/', n_feature=32)
+  BCI.routine_from_npy('pca', 16)
