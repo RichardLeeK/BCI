@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>d2993ee1-3294-4fe5-ba86-1d770bb3490b</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>FE.py</StartupFile>
+    <StartupFile>topoplot.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -33,6 +33,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="RSA.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="topoplot.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, FastICA
 import pickle
 import time, os
 
@@ -27,12 +27,36 @@ def make_n_feature_using_pca(file, n_feature=64):
   print((et - st))  
   return reduced_x
 
-def n_feature_batch(path, n_feature=64):
+def make_n_feature_using_ica(file, n_feature=64):
+  print(file + ' file processing...')
+  ica = FastICA(n_components = n_feature)
+  file = open(file)
+  lines = file.readlines()
+  file.close()
+  x = []
+  for line in lines:
+    sl = line.split(',')
+    cur_x = []
+    for val in sl:
+      cur_x.append(float(val))
+    x.append(cur_x)
+  x = np.array(x)
+  x = np.transpose(x)
+  st = time.time()
+  reduced_x = ica.fit_transform(x)
+  et = time.time()
+  print((et - st))  
+  return reduced_x
+
+def n_feature_batch(path, mode, n_feature=64):
   files = os.listdir(path)
   ff = {}
   for file in files:
     if file.split('_')[-1] == 'x.csv':
-      rt = make_n_feature_using_pca(path + '/' + file, n_feature)
+      if mode == 'pca':
+        rt = make_n_feature_using_pca(path + '/' + file, n_feature)
+      if mode == 'ica':
+        rt = make_n_feature_using_ica(path + '/' + file, n_feature)
       if file.split('_')[0] not in ff:
         ff[file.split('_')[0]] = {}
       ff[file.split('_')[0]]['x'] = rt
@@ -51,10 +75,10 @@ def n_feature_batch(path, n_feature=64):
       if file.split('_')[0] not in ff:
         ff[file.split('_')[0]] = {}
       ff[file.split('_')[0]]['y'] = y
-  fff = open('res/'+str(n_feature)+'.pic', 'wb')
+  fff = open('res/'+str(n_feature)+'.' + mode + '.pic', 'wb')
   pickle.dump(ff, fff)
   fff.close()
 
 if __name__=='__main__':
-  #n_feature_batch('dat/', n_feature=2048)
-  BCI.routine_from_npy(64)
+  n_feature_batch('dat/', 'ica', n_feature=16)
+  #BCI.routine_from_npy(64)
