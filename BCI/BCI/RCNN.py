@@ -44,8 +44,8 @@ def RCL_block(l_settings, l, pool=True):
 
 
 
-def create_model(csp_val=3, output_dim=3, nb_layer=2):
-  input = Input(shape=(5, 5, 4))
+def create_model(resize, output_dim=3, nb_layer=4):
+  input = Input(shape=(resize, resize, 18))
   conv = Conv2D(128, (3, 3), padding='same', activation='relu')
   l = conv(input)
 
@@ -54,10 +54,9 @@ def create_model(csp_val=3, output_dim=3, nb_layer=2):
       l = RCL_block(conv, l, pool=False)
     else:
       l = RCL_block(conv, l, pool=True)
-    print(i)
   out = Flatten()(l)
   out = Dense(3, activation='softmax')(out)
   model = Model(input = input, output = out)
-  model.compile(loss = 'categorical_crossentropy', optimizer = 'adam', metrics = ['accuracy'])
+  model.compile(loss = 'kullback_leibler_divergence', optimizer = 'RMSprop', metrics = ['accuracy'])
   return model
 
