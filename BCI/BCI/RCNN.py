@@ -57,6 +57,6 @@ def create_model(resize, output_dim=3, nb_layer=4):
   out = Flatten()(l)
   out = Dense(3, activation='softmax')(out)
   model = Model(input = input, output = out)
-  model.compile(loss = 'kullback_leibler_divergence', optimizer = 'RMSprop', metrics = ['accuracy'])
+  model.compile(loss = 'categorical_crossentropy', optimizer = 'Adadelta', metrics = ['accuracy'])
   return model
 

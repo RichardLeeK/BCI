@@ -52,31 +52,45 @@ def data_transform_for_RCNN(dat, resize):
     rev_y.append(cur)
   return np.array(x), np.array(rev_y)
 
-def one_train_test(data, resize):
+def one_train_test(file, data, resize, epoch):
   x, y = data_transform_for_RCNN(data, resize)
-  kv = BCI.gen_kv_idx(y, 5)
-  acc = []
+  kv = BCI.gen_kv_idx(y, 10)
+  acc = []; loss = []
   for train_idx, test_idx in kv:
     x_train, y_train = x[train_idx], y[train_idx]
     x_test, y_test = x[test_idx], y[test_idx]
     model = RCNN.create_model(resize)
-    model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=10)
+    model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch)
     metrics = model.evaluate(x_test, y_test)
     for i in range(len(model.metrics_names)):
       if (str(model.metrics_names[i] == 'acc')):
         acc.append(metrics[i])
+      if (str(model.metrics_names[i] == 'loss')):
+        loss.append(metrics[i])
+
   pen = open('/result.csv', 'a')
-  acc_sen += [str(v) for v in acc]
-  pen.write()
+
+  config_sen = file+',RCNN,out,'+str(resize)+','+str(epoch)+','
+
+  acc_sen = ''
+  for v in acc: acc_sen += (str(v) + ',')
+  acc_sen += (str(sum(acc) / float(len(acc))) + ',')
+  loss_sen = ''
+  for v in loss: los_sen += (str(v) + ',')
+  loss_sen += (str(sum(loss) / float(len(loss))) + ',')
+  pen.write(config_sen + acc_sen + loss_sen + '\n')
+  pen.close()
 
 
 def train_test():
-  resize = 32
-  path = 'G:/Virtual Space/BCI/BCI/BCI/BCI/fig/ori/out/' + str(resize) + '/'
+  resize = 64
+  path = 'fig/ori/out/' + str(resize) + '/'
   #model = CNN.create_model()
   #
   full_dat = joblib.load(path + 'dat.pic')
-  one_train_test(full_dat['bwyu'], resize)
+  for k, v in full_dat.items():
+    one_train_test(k ,full_dat[k], resize, 100)
+
   
 
 if __name__=='__main__':
