@@ -109,3 +109,6 @@ ENV/
 /BCI/BCI/fig_dat
 /BCI/BCI/fig_dat2
 /BCI/BCI/fig/ori
+*.csv
+*.png
+*.pic

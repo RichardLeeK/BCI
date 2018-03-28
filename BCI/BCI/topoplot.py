@@ -7,6 +7,30 @@ import RCNN
 import BCI
 import CNN
 
+def image_matrix_processing(path):
+  output_path = 'fig/mat/'
+  files = os.listdir(path)
+  dic = {}
+  for file in files:
+    print(file)
+    f = open(path+file, 'r')
+    line = f.readline()
+    f.close()
+    sl = line.split(',')
+    cur_x = []
+    for v in sl:
+      cur_x.append(float(v))
+    
+    sf = file.split('_')
+    if sf[0] not in dic:
+      dic[sf[0]] = {}
+    if sf[2] not in dic[sf[0]]:
+      dic[sf[0]][sf[2]] = {'x': [[], [], [], [], [], []], 'y': int(sf[3])}
+    idx = int(float(sf[4].split('s')[0]) * 2) - 1
+    
+    dic[sf[0]][sf[2]]['x'][idx] = np.array(cur_x)
+  joblib.dump(dic, output_path + 'grasp_MI.pic')  
+
 def test(path):
   img = Image.open(path+'/bwyu_twist_1_2_0.0s.png')
   img = img.crop()
@@ -14,8 +38,8 @@ def test(path):
   # out:(210,85,690,570)
   # midium: (250,125,650,530)
   # in: (280, 155, 620, 500)
-def batch_crop(path, crop_size=(210,85,690,570), re_size=(256, 256)):
-  output_path = 'fig/ori/out/256/'
+def batch_crop(path, crop_size=(280, 155, 620, 500), re_size=(32, 32)):
+  output_path = 'fig/abs/in/32/'
   sample_cnt = 3
   files = os.listdir(path)
   dic = {}
@@ -34,6 +58,7 @@ def batch_crop(path, crop_size=(210,85,690,570), re_size=(256, 256)):
     if sf[2] not in dic[sf[0]]:
       dic[sf[0]][sf[2]] = {'x': [[], [], [], [], [], []], 'y': int(sf[3])}
     idx = int(float(sf[4].split('s')[0]) * 2)
+    
     dic[sf[0]][sf[2]]['x'][idx] = np_img
   joblib.dump(dic, output_path + 'dat.pic')  
   
@@ -45,6 +70,20 @@ def data_transform_for_RCNN(dat, resize):
     c_y = v['y']
     x.append(c_x)
     y.append(c_y)
+  rev_y = []
+  for l in y:
+    cur = [0, 0, 0]
+    cur[l - 1] = 1
+    rev_y.append(cur)
+  return np.array(x), np.array(rev_y)
+
+def data_transform_for_CNN(dat, resize):
+  x = []
+  y = []
+  for k, v in dat.items():
+    for l in v['x']:
+      x.append(l.reshape(resize, resize, 3))
+      y.append(v['y'])
   rev_y = []
   for l in y:
     cur = [0, 0, 0]
@@ -69,20 +108,40 @@ def one_train_test(data, resize):
   acc_sen += [str(v) for v in acc]
   pen.write()
 
-
 def train_test():
   resize = 32
   path = 'G:/Virtual Space/BCI/BCI/BCI/BCI/fig/ori/out/' + str(resize) + '/'
-  #model = CNN.create_model()
-  #
-  full_dat = joblib.load(path + 'dat.pic')
-  one_train_test(full_dat['bwyu'], resize)
   
+  full_dat = joblib.load(path + 'dat.pic')
+  #one_train_test(full_dat['bwyu'], resize)
+  
+  data_transform_for_CNN(full_dat['bwyu'], resize)
+
+def train_test_3DCNN(data, resize):
+  x, y = data_transform_for_RCNN(data, resize)
+  kv = BCI.gen_kv_idx(y, 5)
+  acc = []
+  for train_idx, test_idx in kv:
+    x_train, y_train = x[train_idx], y[train_idx]
+    x_test, y_test = x[test_idx], y[test_idx]
+    model = CNN.create_3d_model()
+    model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=10)
+    metrics = model.evaluate(x_test, y_test)
+    for i in range(len(model.metrics_names)):
+      if (str(model.metrics_names[i] == 'acc')):
+        acc.append(metrics[i])
+  pen = open('/result.csv', 'a')
+  acc_sen += [str(v) for v in acc]
+  pen.write()
+
 
 if __name__=='__main__':
-  train_test()
-  #batch_crop('C:/Users/Richard/Documents/MATLAB/fig3/')
+  train_test_3DCNN()
+  
+  #train_test()
+  #batch_crop('C:/Users/Richard/Documents/MATLAB/fig4/')
   #test('C:/Users/Richard/Documents/MATLAB/fig3/')
+  #image_matrix_processing('C:/Users/Richard/Documents/MATLAB/image matrix_grasp/')
 """
 path = 'C:/Users/Richard/Documents/MATLAB/fig2/'
 

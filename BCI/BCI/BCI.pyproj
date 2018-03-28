@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>d2993ee1-3294-4fe5-ba86-1d770bb3490b</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>topoplot.py</StartupFile>
+    <StartupFile>CFC.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,6 +23,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BCI.py" />
+    <Compile Include="CFC.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="CNN.py">
       <SubType>Code</SubType>
     </Compile>
