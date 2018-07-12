@@ -1,3 +1,4 @@
+
 import numpy as np
 
 from keras.models import Sequential
@@ -154,6 +155,14 @@ def label_test(label):
       if lab[i] == 1:
         tot[i] += 1
   return tot
+
+def lab_inv_translator(y):
+  rev_y = []
+  for i in range(len(y)):
+    tot = [0, 0, 0]
+    tot[int(y[i]) - 1] = 1
+    rev_y.append(tot)
+  return rev_y
 
 def lab_translator(y):
   for i in range(len(y)):

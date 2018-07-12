@@ -112,3 +112,7 @@ ENV/
 *.csv
 *.png
 *.pic
+/BCI/BCI/raw.js
+/BCI/BCI/test.js
+/BCI/BCI/raw.pk
+/BCI/BCI/sb_csp.pk

@@ -78,6 +78,7 @@ def data_transform_for_RCNN(dat, resize):
   return np.array(x), np.array(rev_y)
 
 def one_train_test(file, data, resize, epoch):
+  print('a')
 def data_transform_for_CNN(dat, resize):
   x = []
   y = []

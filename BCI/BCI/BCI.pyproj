@@ -5,15 +5,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>d2993ee1-3294-4fe5-ba86-1d770bb3490b</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>CFC.py</StartupFile>
+    <StartupFile>RSTNN.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>BCI</Name>
     <RootNamespace>BCI</RootNamespace>
-    <InterpreterId>{c0c9df3d-f76e-4ea8-97fc-84166650af83}</InterpreterId>
-    <InterpreterVersion>3.5</InterpreterVersion>
+    <InterpreterId>Global|ContinuumAnalytics|Anaconda36-64</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,6 +30,9 @@
     <Compile Include="CNN.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CRNN.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FE.py">
       <SubType>Code</SubType>
     </Compile>
@@ -46,6 +48,9 @@
     <Compile Include="RSA.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="RSTNN.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="test.py">
       <SubType>Code</SubType>
     </Compile>
@@ -54,7 +59,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <InterpreterReference Include="{c0c9df3d-f76e-4ea8-97fc-84166650af83}\3.5" />
+    <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda36-64" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
