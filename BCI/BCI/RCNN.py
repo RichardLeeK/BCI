@@ -45,7 +45,7 @@ def RCL_block(l_settings, l, pool=True):
 
 
 def create_model(resize, output_dim=3, nb_layer=2):
-  input = Input(shape=(6, 6, 5))
+  input = Input(shape=(3, 6, 5))
   conv = Conv2D(128, (3, 3), padding='same', activation='relu')
   l = conv(input)
 
@@ -82,13 +82,13 @@ def csv_to_pickle(path):
     data[file]['y'] = y
 
   import pickle
-  with open('sb_csp.pk', 'wb') as f:
+  with open('sb_csp_60.pk', 'wb') as f:
     pickle.dump(data, f)
   print('fin')
 
 def batch(epoch):
   import pickle
-  with open('sb_csp.pk', 'rb') as f:
+  with open('sb_csp_60.pk', 'rb') as f:
     data = pickle.load(f)
   import BCI
   for k in data:
@@ -99,14 +99,14 @@ def batch(epoch):
     acc = []; loss = [];
     for train_idx, test_idx in kv:
       x_train, y_train = x[train_idx], y[train_idx]
-      x_train = x_train.reshape(len(x_train), 6, 6, 5)
+      x_train = x_train.reshape(len(x_train), 3, 6, 5)
       x_test, y_test = x[test_idx], y[test_idx]
-      x_test = x_test.reshape(len(x_test), 6, 6, 5)
+      x_test = x_test.reshape(len(x_test), 3, 6, 5)
       
-      model = create_model((6, 6, 5))
+      model = create_model((3, 6, 5))
       model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch)
       metrics = model.evaluate(x_test, y_test)
-      pen = open('rcnn_res.csv', 'a')
+      pen = open('rcnn_res_60.csv', 'a')
       pen.write('RCNN,' + k + ',' + str(epoch) + ',' + str(metrics[1]) + '\n')
       pen.close()
       
@@ -115,5 +115,11 @@ def batch(epoch):
 
 
 if __name__ == '__main__':
-  for i in range(0, 1000):
-    batch(i)
+  """
+  csv_to_pickle('G:\\Richard\\작업공간\\KIST 로봇팔\\Source code\\dat\\0730_RCNN\\')
+
+  """
+
+
+  for i in range(0, 100):
+    batch(i * 10)

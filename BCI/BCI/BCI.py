@@ -156,12 +156,21 @@ def label_test(label):
         tot[i] += 1
   return tot
 
-def lab_inv_translator(y):
+def lab_inv_translator(y, length=3):
   rev_y = []
   for i in range(len(y)):
-    tot = [0, 0, 0]
+    tot = [0 for i in range(length)]
     tot[int(y[i]) - 1] = 1
     rev_y.append(tot)
+  return rev_y
+
+def inv_translator_for_resting(y):
+  rev_y = []
+  for i in range(len(y)):
+    if y[i] == 3.0:
+      rev_y.append([0, 1])
+    else:
+      rev_y.append([1, 0])
   return rev_y
 
 def lab_translator(y):
@@ -189,7 +198,9 @@ def gen_kv_idx(y, order=5):
   for i in range(len(divided_lab)):
     res.append(chunks(divided_lab[i], int(float(len(divided_lab[i]))/order)))
   for i in range(order):
-    test_idx = res[0][i] + res[1][i] + res[2][i]
+    test_idx = []
+    for j in range(len(res)):
+      test_idx += res[j][i]
     train_idx = []
     for j in range(len(y)):
       if j not in test_idx:

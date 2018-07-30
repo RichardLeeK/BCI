@@ -116,3 +116,6 @@ ENV/
 /BCI/BCI/test.js
 /BCI/BCI/raw.pk
 /BCI/BCI/sb_csp.pk
+*.npz
+*.js
+*.pk
