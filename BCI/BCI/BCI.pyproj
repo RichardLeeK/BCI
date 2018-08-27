@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>d2993ee1-3294-4fe5-ba86-1d770bb3490b</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>CSP.py</StartupFile>
+    <StartupFile>test.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -33,16 +33,34 @@
     <Compile Include="Competition.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Com_test.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="CRNN.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CSP.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="data_trans.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="data_trans2.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FE.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="feature_selection.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FFS.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="main.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MIBIF.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MPA.py">
@@ -55,6 +73,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="RSTNN.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SFS.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="temp_hrv.py">

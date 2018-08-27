@@ -211,7 +211,7 @@ def gen_kvt_idx(y, order=5):
   res = []
   divided_lab = lab_divider(y)
   for i in range(len(divided_lab)):
-    res.append(chunks(divided_lab[i], int(float(len(divided_lab[i]))/5)))
+    res.append(chunks(divided_lab[i], int(float(len(divided_lab[i]))/order)))
   for i in range(order):
     test_idx = res[0][i] + res[1][i] + res[2][i]
     val_idx = res[0][(i + 1) % order] + res[0][(i + 1) % order] + res[0][(i + 1) % order]

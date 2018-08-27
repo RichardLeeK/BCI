@@ -1,6 +1,5 @@
 
 from scipy.io import loadmat
-from wyrm.io import load_bcicomp3_ds1
 import numpy as np
 import os
 
@@ -67,6 +66,7 @@ def y_generator(y):
     elif v == 'right': new_y.append(2)
     elif v == 'left': new_y.append(3)
   return new_y
+
 
 if __name__ == '__main__':
   path = 'data/'

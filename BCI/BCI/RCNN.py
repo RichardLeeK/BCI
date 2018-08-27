@@ -45,7 +45,7 @@ def RCL_block(l_settings, l, pool=True):
 
 
 def create_model(resize, output_dim=3, nb_layer=2):
-  input = Input(shape=(3, 6, 5))
+  input = Input(resize)
   conv = Conv2D(128, (3, 3), padding='same', activation='relu')
   l = conv(input)
 
@@ -57,8 +57,28 @@ def create_model(resize, output_dim=3, nb_layer=2):
   out = Flatten()(l)
   out = Dense(3, activation='softmax')(out)
   model = Model(input = input, output = out)
+  print(model.summary())
   model.compile(loss = 'categorical_crossentropy', optimizer = 'Adadelta', metrics = ['accuracy'])
   return model
+
+def create_model2(resize, output_dim=3, nb_layer=4):
+  input = Input(resize)
+  conv = Conv2D(128, (3, 3), padding='same', activation='relu')
+  l = conv(input)
+
+  for i in range(nb_layer):
+    if i % 2 == 0:
+      l = RCL_block(conv, l, pool=False)
+    else:
+      l = RCL_block(conv, l, pool=True)
+  l = Dropout(0.5)(l)
+  out = Flatten()(l)
+  out = Dense(4, activation='softmax')(out)
+  model = Model(input = input, output = out)
+  print(model.summary())
+  model.compile(loss = 'categorical_crossentropy', optimizer = 'Adadelta', metrics = ['accuracy'])
+  return model
+
 
 def csv_to_pickle(path):
   import os
