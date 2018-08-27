@@ -80,6 +80,7 @@ def create_model2(resize, output_dim=3, nb_layer=4):
   return model
 
 
+
 def csv_to_pickle(path):
   import os
   files = os.listdir(path)
@@ -129,7 +130,32 @@ def batch(epoch):
       pen = open('rcnn_res_60.csv', 'a')
       pen.write('RCNN,' + k + ',' + str(epoch) + ',' + str(metrics[1]) + '\n')
       pen.close()
+
+
+def batch_tmp(epoch):
+  import pickle
+  from sklearn.metrics import cohen_kappa_score, accuracy_score, precision_score, f1_score, recall_score
+  with open('sb_csp_60.pk', 'rb') as f:
+    data = pickle.load(f)
+  import BCI
+  for k in data:
+    x = np.array(data[k]['x'])
+    y = data[k]['y']
+    y = np.array(BCI.lab_inv_translator(y))
+    kv = BCI.gen_kv_idx(y, 20)
+    acc = []; loss = [];
+    for train_idx, test_idx in kv:
+      x_train, y_train = x[train_idx], y[train_idx]
+      x_train = x_train.reshape(len(x_train), 3, 6, 5)
+      x_test, y_test = x[test_idx], y[test_idx]
+      x_test = x_test.reshape(len(x_test), 3, 6, 5)
       
+      model = create_model((3, 6, 5))
+      model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch)
+      metrics = model.evaluate(x_test, y_test)
+      pen = open('rcnn_res_60.csv', 'a')
+      pen.write('RCNN,' + k + ',' + str(epoch) + ',' + str(metrics[1]) + '\n')
+      pen.close()
       
       
 
