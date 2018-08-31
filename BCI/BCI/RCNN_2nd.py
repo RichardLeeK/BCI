@@ -29,6 +29,34 @@ def make_data(sub):
     scipy.io.savemat('RCNN2/twist_ori/' + sub + '_' + str(k) + '.mat', res)
     k+=1
 
+def epo_temporal_dividing(x, seg):
+  new_x = np.zeros(shape=(x.shape[0], x.shape[1], int(x.shape[2]/seg), seg, x.shape[3]))
+  for i in range(seg):
+    new_x[:,:,:,i,:] = x[:,:,int(x.shape[2]/seg) * i:int(x.shape[2]/seg) * (i + 1),:]
+  return np.array(new_x)
+
+def make_data_temporal(sub):
+  segment_idx = 5
+  cnt = scipy.io.loadmat('raw_KIST/twist/raw_cnt_' + sub + '.mat')['cnt'][0][0][4]
+  mrk = scipy.io.loadmat('raw_KIST/twist/raw_mrk_' + sub + '.mat')['mrk'][0][0][0][0]
+  y = scipy.io.loadmat('raw_KIST/twist/raw_mrk_' + sub + '.mat')['mrk'][0][0][3]
+  epo = []
+  for i in range(1, 10):
+    cnt_fs = CSP.arr_bandpass_filter(cnt, i * 4, (i + 1) * 4, 1000, 4)
+    epo.append(cnt_to_epo(cnt_fs, mrk))
+  y_  = np.transpose(y)
+  kv = BCI.gen_kv_idx(y_, 5)
+  k = 1
+
+  for train_idx, test_idx in kv:
+    train_x = epo_temporal_dividing(np.array(epo)[:,train_idx,:,:], segment_idx)
+    test_x = epo_temporal_dividing(np.array(epo)[:,test_idx,:,:], segment_idx)
+    train_y = y[:, train_idx]
+    test_y = y[:, test_idx]
+    res = {'train_x': train_x, 'test_x': test_x, 'train_y': train_y, 'test_y': test_y}
+    scipy.io.savemat('RCNN2/twist_ori/' + sub + '_' + str(k) + '.mat', res)
+    k+=1
+
 def x_translator(x):
   new_x = np.zeros((len(x[0][0]), len(x), len(x[0])))
   for i in range(len(x[0][0])):
@@ -59,5 +87,6 @@ def classification(sub):
 
 if __name__ == '__main__':
   for i in range(1, 14):
+    make_data_temporal(str(i))
     #make_data(str(i))
-    classification(str(i))
+    #classification(str(i))
