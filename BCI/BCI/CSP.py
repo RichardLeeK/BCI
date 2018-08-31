@@ -170,6 +170,15 @@ def bandpass_filter(data, lowcut, highcut, fs, order=5):
 def arr_bandpass_filter(data, lowcut, highcut, fs, order=5):
   y = np.array(data)
   filtered_y = np.zeros(data.shape)
+  for i in range(len(data[0])):
+    cur_data = data[:,i]
+    cur_y = bandpass_filter(cur_data, lowcut, highcut, fs, order)
+    y[:,i] = cur_y
+  return y
+
+def arr2_bandpass_filter(data, lowcut, highcut, fs, order=5):
+  y = np.array(data)
+  filtered_y = np.zeros(data.shape)
   for i in range(len(data)):
     for j in range(len(data[i])):
       cur_data = data[i][j]

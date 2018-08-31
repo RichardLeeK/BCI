@@ -3,7 +3,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Flatten, Convolution1D, Dropout, Conv2D, MaxPooling2D, Conv3D, MaxPooling3D, Activation
 from keras.layers.advanced_activations import LeakyReLU
 
-def create_model(input_dim=32):
+def create_model(input_dim=(32, 32, 3)):
   model = Sequential()
   model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=input_dim))
   #model.add(MaxPooling2D(pool_size=(3, 3)))
@@ -13,7 +13,7 @@ def create_model(input_dim=32):
   model.add(Dense(128, activation='relu'))
   model.add(Dropout(0.5))
   model.add(Dense(3, activation='softmax'))
-  model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+  model.compile(loss='categorical_crossentropy', optimizer='Nadam', metrics=['accuracy'])
   return model
 
 

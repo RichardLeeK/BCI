@@ -188,7 +188,31 @@ def arr_bandpass_filter(data, lowcut, highcut, fs, order=5):
       y[i][j] = cur_y
   return y
 
+
+def real_test():
+  file = open('dlfkjalk.csv', 'r')
+  lines = file.readlines()
+  x = []; y = []
+  for line in lines:
+    sl = line.split(",")
+    cur_x = []
+    for v in sl[:-3]:
+      cur_x.append(float(v))
+    cur_y = [float(sl[-3]), float(sl[-2]), float(sl[-1])]
+    x.append(np.array(cur_x))
+    y.append(np.array(cur_y))
+
+  from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+  clf2 = LinearDiscriminantAnalysis(solver='lsqr', shrinkage='auto')
+  x = np.array(x)
+  y = np.array(y).argmax(axis=1)
+  clf2.fit(x[20:], y[20:])
+  sc  = clf2.score(x[:20], y[:20])
+  print(sc)
+
+
 if __name__ == "__main__":
+    real_test()
     make_plot()
 
     import numpy as np

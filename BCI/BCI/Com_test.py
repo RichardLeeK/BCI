@@ -349,14 +349,7 @@ def load_tscsp_nested2(sub='1'):
 
     conf1 += confusion1
     conf2 += confusion2
-    """
-    cohens.append(cohen_kappa_score(y_predict, y_test.argmax(axis=1)))
-    accs.append(accuracy_score(y_test.argmax(axis=1), y_predict))
-    pres.append(precision_score(y_test.argmax(axis=1), y_predict, average='macro'))
-    recs.append(recall_score(y_test.argmax(axis=1), y_predict, average='macro'))
-    f1s.append(f1_score(y_test.argmax(axis=1), y_predict, average='macro'))
-    """
-   print('abc')
+
 
 
 def make_topos(sub='1'):

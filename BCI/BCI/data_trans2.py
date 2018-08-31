@@ -18,23 +18,18 @@ def load_kist_data(sub = '3'):
     file = open('kist_test_data/twist/np/' + sub + '_' + str(k) + '.pic', 'wb')
     pickle.dump({'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test}, file)
     file.close()
+    f_train = {'clab':[1, 2, 3], 'fs':250, 'x': [], 'y': []}
+    f_test = {'clab':[1, 2, 3], 'fs':250, 'x': [], 'y': []}
+    
+    f_train['x'] = np.transpose(x_train)
+    f_train['y'] = np.transpose(y_train)
+    f_test['x'] = np.transpose(x_test)
+    f_test['y'] = np.transpose(y_test)
 
-    step = int(len(x[0][0]) / 1)
-    for j in range(1, 4):
-      cur_cur_x_train = CSP.arr_bandpass_filter(x_train, j*12, (j+1)*12, 250)
-      cur_cur_x_test = CSP.arr_bandpass_filter(x_test, j*12, (j+1)*12, 250)
-
-      f_train = {'clab':[1, 2, 3, 4], 'fs':250, 'x': [], 'y': []}
-      f_test = {'clab':[1, 2, 3, 4], 'fs':250, 'x': [], 'y': []}
-      f_train['x'] = np.transpose(cur_cur_x_train)
-      f_train['y'] = np.transpose(y_train)
-      f_test['x'] = np.transpose(cur_cur_x_test)
-      f_test['y'] = np.transpose(y_test)
-
-      scipy.io.savemat('kist_test_data/twist/ori/A0' + sub + 'T_' + str(j) + '_' + str(k) + '_train.mat', f_train)
-      scipy.io.savemat('kist_test_data/twist/ori/A0' + sub + 'T_' + str(j) + '_' + str(k) + '_test.mat', f_test)
-
+    scipy.io.savemat('kist_test_data/twist/ori/A0' + sub + 'T_' + str(k) + '_train.mat', f_train)
+    scipy.io.savemat('kist_test_data/twist/ori/A0' + sub + 'T_' + str(k) + '_test.mat', f_test)
     k += 1
+
 def x_translator(x):
   new_x = []
   for i in range(len(x[0])):
@@ -78,4 +73,5 @@ def rcnn_ts_batch(sub = '1'):
 if __name__ == '__main__':
   for i in range(3, 16):
 #    load_kist_data(str(i))
+
     rcnn_ts_batch(str(i))
