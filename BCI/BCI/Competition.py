@@ -58,6 +58,10 @@ def load_one_data(path):
   trials, classes = datasetA1.get_trials_from_channel()
   return trials, y_generator(classes)
 
+def load_cnt_mrk_data(path):
+  datasetA1 = MotorImageryDataset(dataset=path)
+  return datasetA1.raw
+
 def y_generator(y):
   new_y = []
   for v in y:
