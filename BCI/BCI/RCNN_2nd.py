@@ -36,7 +36,7 @@ def epo_temporal_dividing(x, seg):
   return np.array(new_x)
 
 def make_data_temporal(sub):
-  segment_idx = 10
+  segment_idx = 3
   cnt = scipy.io.loadmat('raw_KIST/twist/raw_cnt_' + sub + '.mat')['cnt'][0][0][4]
   mrk = scipy.io.loadmat('raw_KIST/twist/raw_mrk_' + sub + '.mat')['mrk'][0][0][0][0]
   y = scipy.io.loadmat('raw_KIST/twist/raw_mrk_' + sub + '.mat')['mrk'][0][0][3]
@@ -54,7 +54,7 @@ def make_data_temporal(sub):
     train_y = y[:, train_idx]
     test_y = y[:, test_idx]
     res = {'train_x': train_x, 'test_x': test_x, 'train_y': train_y, 'test_y': test_y}
-    scipy.io.savemat('RCNN2/twist_temp_10/' + sub + '_' + str(k) + '.mat', res)
+    scipy.io.savemat('RCNN2/twist_temp_3/' + sub + '_' + str(k) + '.mat', res)
     k+=1
 
 def x_translator(x):
@@ -88,5 +88,5 @@ def classification(sub):
 if __name__ == '__main__':
   for i in range(1, 14):
     make_data_temporal(str(i))
-    make_data(str(i))
+    #make_data(str(i))
     #classification(str(i))
