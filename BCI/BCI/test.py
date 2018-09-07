@@ -211,50 +211,22 @@ def real_test():
   print(sc)
 
 
+
+def test_ddd():
+  import scipy.io, BCI
+  from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+  data = scipy.io.loadmat('C:/Users/CNM/Downloads/fbcsp_example/ConvData/csp/1.mat.mat')['csp_fv'][0][0]
+  x = np.transpose(data[4])
+  y = np.transpose(data[5])
+  kv = BCI.gen_kv_idx(y, 5)
+  for train_idx, test_idx in kv:
+    x_train, y_train = x[train_idx], y[train_idx]
+    x_test, y_test = x[test_idx], y[test_idx]
+    model = LinearDiscriminantAnalysis(solver='lsqr', shrinkage='auto')
+    model.fit(x_train, y_train.argmax(axis=1))
+    score = model.score(x_test, y_test.argmax(axis=1))
+    predict = model.predict(x_test)
+
+
 if __name__ == "__main__":
-    real_test()
-    make_plot()
-
-    import numpy as np
-    import matplotlib.pyplot as plt
-    from scipy.signal import freqz
-    fs = 5000.0
-    lowcut = 500.0
-    highcut = 1250.0
-    # Filter a noisy signal.
-    T = 0.05
-    nsamples = T * fs
-    t = np.linspace(0, T, nsamples, endpoint=False)
-    a = 0.02
-    f0 = 600.0
-    x = 0.1 * np.sin(2 * np.pi * 1.2 * np.sqrt(t))
-    x += 0.01 * np.cos(2 * np.pi * 312 * t + 0.1)
-    x += a * np.cos(2 * np.pi * f0 * t + .11)
-    x += 0.03 * np.cos(2 * np.pi * 2000 * t)
-    plt.figure(2)
-    plt.clf()
-    plt.plot(t, x, label='Noisy signal')
-
-    y = butter_bandpass_filter(x, lowcut, highcut, fs, order=6)
-    plt.plot(t, y, label='Filtered signal (%g Hz)' % f0)
-    plt.xlabel('time (seconds)')
-    plt.hlines([-a, a], 0, T, linestyles='--')
-    plt.grid(True)
-    plt.axis('tight')
-    plt.legend(loc='upper left')
-
-
-    plt.figure(3)
-    plt.plot(t, x, label='Noisy signal')
-    y_ = bandpass_filter(x, lowcut, highcut, fs, order=6)
-    plt.plot(t, y_, label='dfdfd')
-    plt.xlabel('time (seconds)')
-    plt.hlines([-a, a], 0, T, linestyles='--')
-    plt.grid(True)
-    plt.axis('tight')
-    plt.legend(loc='upper left')
-
-
-
-
-    plt.show()
+    test_ddd()

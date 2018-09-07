@@ -58,9 +58,27 @@ def load_one_data(path):
   trials, classes = datasetA1.get_trials_from_channel()
   return trials, y_generator(classes)
 
-def load_cnt_mrk_data(path):
-  datasetA1 = MotorImageryDataset(dataset=path)
-  return datasetA1.raw
+def load_cnt_mrk_y(path):
+  ds = MotorImageryDataset(dataset=path)
+  cnt = np.transpose(ds.raw)
+  mrk = ds.events_position.flatten()
+  dur = ds.events_duration.flatten()
+  y = np.zeros(len(mrk))
+  for i in range(len(mrk)):
+    ds.events_type[:,i][0]
+    if ds.events_type[:,i][0] not in ds.mi_types:
+      y[i] = 5
+    elif ds.mi_types[ds.events_type[:,i][0]] == 'left':
+      y[i] = 0
+    elif ds.mi_types[ds.events_type[:,i][0]] == 'right':
+      y[i] = 1
+    elif ds.mi_types[ds.events_type[:,i][0]] == 'foot':
+      y[i] = 2
+    elif ds.mi_types[ds.events_type[:,i][0]] == 'tongue':
+      y[i] = 3
+    else:
+      y[i] = 4
+  return cnt, mrk[:-1], dur[:-1], y[1:]
 
 def y_generator(y):
   new_y = []

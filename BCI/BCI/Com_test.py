@@ -150,37 +150,224 @@ def gen_fbcsp(path='data/A01T.npz'):
     scipy.io.savemat('mat/fbcsp_ori/A01T_' + str(i) + '_2.mat', f[1])
     scipy.io.savemat('mat/fbcsp_ori/A01T_' + str(i) + '_3.mat', f[2])
 
+
+def cnt_to_epo(cnt, mrk, dur):
+  epo = []
+  for i in range(len(mrk)):
+    epo.append(np.array(cnt[mrk[i] : mrk[i] + dur[i]]))
+  epo = np.array(epo)
+  return epo
+
+def out_label_remover(x, y):
+  new_x = []; new_y = [];
+  for i in range(len(y)):
+    if y[i] == 4 or y[i] == 5:
+      None
+    else:
+      new_x.append(np.array(x[i]))
+      new_y.append(int(y[i]))
+  return np.array(new_x), np.array(new_y)
+
+def epo_temporal_dividing(x, win_size, upd_time, fs = 250):
+  seg = int((x.shape[2] - (win_size * fs)) / (upd_time * fs)) + 1
+  new_x = np.zeros(shape=(x.shape[0], x.shape[1], int(win_size * fs), seg, x.shape[3]))
+  for i in range(seg):
+    new_x[:,:,:,i,:] = x[:,:,int(upd_time * fs * i):int(upd_time * fs * i + win_size * fs),:]
+  return np.array(new_x)
+
 def gen_tscsp(sub='1'):
   path = 'data/A0'+ sub + 'T.npz'
-  x, y = Competition.load_one_data(path)
-  x = np.array(x)
-  step = int(len(x[0][0]) / 5)
-  for i in range(0, 5):
-    cur_x = x[:, :, step * i:step * (i + 1)]
-    for j in range(1, 10):
-      cur_cur_x = CSP.arr_bandpass_filter(cur_x, j*4, (j+1)*4, 250)
-      f = one_fbcsp(cur_cur_x, y)
-      scipy.io.savemat('mat/tscsp_ori/A0' + sub + 'T_' + str(i) + '_' + str(j) + '_1.mat', f[0])
-      scipy.io.savemat('mat/tscsp_ori/A0' + sub + 'T_' + str(i) + '_' + str(j) + '_2.mat', f[1])
-      scipy.io.savemat('mat/tscsp_ori/A0' + sub + 'T_' + str(i) + '_' + str(j) + '_3.mat', f[2])
+  cnt, mrk, dur, y = Competition.load_cnt_mrk_y(path)
+  epo = []
+  for i in range(1, 10): # band-pass filtering
+    cnt_fs = CSP.arr_bandpass_filter(cnt, i * 4, (i + 1) * 4, 250, 4)
+    cur_epo = cnt_to_epo(cnt_fs, mrk, dur)
+    cur_epo, y_ = out_label_remover(cur_epo, y)
+    epo.append(cur_epo)
+  y = BCI.lab_inv_translator(y_, 4)
+  kv = BCI.gen_kv_idx(y, 5)
+  k = 1
+  for train_idx, test_idx in kv:
+    train_x = epo_temporal_dividing(np.array(epo)[:,train_idx,:,:], 4, 0.5, 250)
+    test_x = epo_temporal_dividing(np.array(epo)[:,test_idx,:,:], 4, 0.5, 250)
+    train_y = np.transpose(np.array(y)[train_idx])
+    test_y = np.transpose(np.array(y)[test_idx])
+    res = {'train_x': train_x, 'test_x': test_x, 'train_y': train_y, 'test_y': test_y}
+    scipy.io.savemat('competition/ori_4_0.5/' + sub + '_' + str(k) + '.mat', res)
+    k += 1
 
-def gen_stcsp(path='data/A01T.npz'):
-  x, y = Competition.load_one_data(path)
-  x = np.array(x)
-  step = int(len(x[0][0]) / 5)
-  for i in range(1, 10):
-    cur_x = CSP.arr_bandpass_filter(x, i*4, (i+1)*4, 250)
-    for j in range(0, 5):
-      cur_cur_x = x[:, :, step * i:step * (i + 1)]
-      f = one_fbcsp(cur_cur_x, y)
-      scipy.io.savemat('mat/stcsp_ori/A01T_' + str(i) + '_' + str(j) + '_1.mat', f[0])
-      scipy.io.savemat('mat/stcsp_ori/A01T_' + str(i) + '_' + str(j) + '_2.mat', f[1])
-      scipy.io.savemat('mat/stcsp_ori/A01T_' + str(i) + '_' + str(j) + '_3.mat', f[2])
+def trick_ori(train_x, test_x, train_y, test_y):
+  cls = {'clab': [], 'fs': 250, 'tx':[[],[],[]], 'ty':[[],[],[]], 'vx':[[],[],[]], 'vy':[[],[],[]]}
+  cls['clab'] = [['01','23'],['02','13'],['03','12']]
+  for i in range(len(train_y)):
+    if train_y[i] == 0:
+      cls['tx'][0].append(train_x[i])
+      cls['ty'][0].append([1, 0])
+      cls['tx'][1].append(train_x[i])
+      cls['ty'][1].append([1, 0])
+      cls['tx'][2].append(train_x[i])
+      cls['ty'][2].append([1, 0])
+    elif train_y[i] == 1:
+      cls['tx'][0].append(train_x[i])
+      cls['ty'][0].append([1, 0])
+      cls['tx'][1].append(train_x[i])
+      cls['ty'][1].append([0, 1])
+      cls['tx'][2].append(train_x[i])
+      cls['ty'][2].append([0, 1])
+    elif train_y[i] == 2:      
+      cls['tx'][0].append(train_x[i])
+      cls['ty'][0].append([0, 1])
+      cls['tx'][1].append(train_x[i])
+      cls['ty'][1].append([1, 0])
+      cls['tx'][2].append(train_x[i])
+      cls['ty'][2].append([0, 1])
+    elif train_y[i] == 3:
+      cls['tx'][0].append(train_x[i])
+      cls['ty'][0].append([0, 1])
+      cls['tx'][1].append(train_x[i])
+      cls['ty'][1].append([0, 1])
+      cls['tx'][2].append(train_x[i])
+      cls['ty'][2].append([1, 0])
+  
+  for i in range(len(test_y)):
+    if test_y[i] == 0:
+      cls['vx'][0].append(test_x[i])
+      cls['vy'][0].append([1, 0])
+      cls['vx'][1].append(test_x[i])
+      cls['vy'][1].append([1, 0])
+      cls['vx'][2].append(test_x[i])
+      cls['vy'][2].append([1, 0])
+    elif test_y[i] == 1:
+      cls['vx'][0].append(test_x[i])
+      cls['vy'][0].append([1, 0])
+      cls['vx'][1].append(test_x[i])
+      cls['vy'][1].append([0, 1])
+      cls['vx'][2].append(test_x[i])
+      cls['vy'][2].append([0, 1])
+    elif test_y[i] == 2:      
+      cls['vx'][0].append(test_x[i])
+      cls['vy'][0].append([0, 1])
+      cls['vx'][1].append(test_x[i])
+      cls['vy'][1].append([1, 0])
+      cls['vx'][2].append(test_x[i])
+      cls['vy'][2].append([0, 1])
+    elif test_y[i] == 3:
+      cls['vx'][0].append(test_x[i])
+      cls['vy'][0].append([0, 1])
+      cls['vx'][1].append(test_x[i])
+      cls['vy'][1].append([0, 1])
+      cls['vx'][2].append(test_x[i])
+      cls['vy'][2].append([1, 0])
+
+  return cls
+
+def trick_dac(train_x, test_x, train_y, test_y):
+  # divide and conquer
+  cls = {'clab': [], 'fs': 250, 'tx':[[],[],[]], 'ty':[[],[],[]], 'vx':[[],[],[]], 'vy':[[],[],[]]}
+  cls['clab'] = [['01','23'],['02','13'],['03','12']]
+  for i in range(len(train_y)):
+    if train_y[i] == 0:
+      cls['tx'][0].append(train_x[i])
+      cls['ty'][0].append([1, 0])
+      cls['tx'][1].append(train_x[i])
+      cls['ty'][1].append([1, 0])
+      cls['tx'][1].append(train_x[i])
+      cls['ty'][1].append([1, 0]) 
+  
+
+  return 1
+
+def trick_pw():
+  # pair wise
+  return 1
+
+def trick_ovr():
+  # one versus rest
+  return 1
+
+
+
+def gen_tscsp_trick(sub):
+  path = 'data/A0'+ sub + 'T.npz'
+  cnt, mrk, dur, y = Competition.load_cnt_mrk_y(path)
+  epo = []
+  for i in range(1, 10): # band-pass filtering
+    cnt_fs = CSP.arr_bandpass_filter(cnt, i * 4, (i + 1) * 4, 250, 4)
+    cur_epo = cnt_to_epo(cnt_fs, mrk, dur)
+    cur_epo, y_ = out_label_remover(cur_epo, y)
+    epo.append(cur_epo)
+  y = BCI.lab_inv_translator(y_, 4)
+  kv = BCI.gen_kv_idx(y, 5)
+  k = 1
+  for train_idx, test_idx in kv:
+    train_x = epo_temporal_dividing(np.array(epo)[:,train_idx,:,:], 3.5, 0.5, 250)
+    test_x = epo_temporal_dividing(np.array(epo)[:,test_idx,:,:], 3.5, 0.5, 250)
+    cls = trick_ori(train_x, test_x, np.array(y)[train_idx].argmax(axis=1), np.array(y)[test_idx].argmax(axis=1)) 
+    scipy.io.savemat('competition/trick/ori_3.5_0.5/' + sub + '_' + str(k) + '.mat', {'cls': cls})
+    k += 1
 
 
 
 
 
+
+def arr_flatten(x):
+  new_x = []
+  for v in x:
+    new_x.append(v.flatten())
+  return np.array(new_x)
+
+
+def classification(sub):
+  temporal_size = 7
+  import matplotlib.pyplot as plt
+  plt.rcParams["font.family"] = "Times New Roman"
+  import seaborn as sns; sns.set()
+  res_val = np.zeros((9, temporal_size))
+
+  for i in range(1, 6):
+    train_data = scipy.io.loadmat('competition/rev_4.5_0.5/' + sub + '_' + str(i) + '_train.mat')
+    test_data = scipy.io.loadmat('competition/rev_4.5_0.5/' + sub + '_' + str(i) + '_test.mat')
+    train_x = np.transpose(train_data['train'][0][0][0])
+    train_y = np.transpose(train_data['train'][0][0][1])
+    test_x = np.transpose(test_data['test'][0][0][0])
+    test_y = np.transpose(test_data['test'][0][0][1])
+
+    t_train_x = []; t_test_x = [];
+    for k in range(0, 9):
+      for j in range(0, temporal_size):
+        t_train_x.append(arr_flatten(train_x[:,j,:,k]))
+        t_test_x.append(arr_flatten(test_x[:,j,:,k]))
+    for j in range(len(t_test_x)):
+      cur_train_x = t_train_x[j]
+      cur_test_x = t_test_x[j]
+      lda = LinearDiscriminantAnalysis(solver='lsqr', shrinkage='auto')
+      lda.fit(cur_train_x, train_y.argmax(axis=1))
+      y_predict = lda.predict(cur_test_x)
+      coh = cohen_kappa_score(test_y.argmax(axis=1), y_predict)
+      acc = accuracy_score(test_y.argmax(axis=1), y_predict)
+      pre = precision_score(test_y.argmax(axis=1), y_predict, average='macro')
+      rec = recall_score(test_y.argmax(axis=1), y_predict, average='macro')
+      f1 = f1_score(test_y.argmax(axis=1), y_predict, average='macro')
+      sen = str(coh) + ',' + str(acc) + ',' + str(pre) + ',' + str(rec) + ',' + str(f1)
+      #pen = open('total_2_0.5.csv', 'a')
+      #pen.write('SVM,' + sub + ',' + str(i) + ',' + str(j) + ',' + sen + '\n')
+      #pen.close()
+      y_val = j % temporal_size
+      x_val = int(j / temporal_size)
+      res_val[x_val, y_val] += coh
+  res_val /= 5
+  plt.rcParams["font.family"] = "Times New Roman"
+  ax = sns.heatmap(res_val, cmap="BuGn", vmin=0.1, vmax=0.85, square=True, annot=True)
+  plt.savefig('fig/4.5_0.5/' + sub + '.png', format='png', dpi=1000)
+  plt.close()
+  print('abc')
+
+
+
+      
+    
+    
 
 def load_fbcsp(path='data/A01T.npz'):
   data = scipy.io.loadmat('F:/KIST/source/BCI/BCI/BCI/mat/fbcsp_rev/A01T.mat')
@@ -252,7 +439,6 @@ def load_tscsp(sub='1'):
   x, y = Competition.load_one_data(path)
   x_ = data['csp_2']
   
-  #mi_idx = MIBIF.fb_mibif_with_csp(x, y, x_)]
   import feature_selection as FS
   mi_idx = FS.lsvm_filter(x_, y)
   optimal_csp = np.transpose(x_[:,:,mi_idx])
@@ -414,5 +600,8 @@ if __name__ == '__main__':
   #gen_tscsp()
 
   for i in range(1, 10):
-    load_tscsp_nested2(str(i))
-
+    #gen_tscsp(str(i))
+    #load_tscsp(str(i))
+    #classification(str(i))
+    #gen_tscsp(str(i))
+    gen_tscsp_trick(str(i))
