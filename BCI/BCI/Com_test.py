@@ -197,8 +197,71 @@ def gen_tscsp(sub='1'):
     k += 1
 
 def trick_ori(train_x, test_x, train_y, test_y):
+  cls = {'clab': [], 'fs': 250, 'tx':train_x, 'ty':[[],[],[]], 'vx':test_x, 'vy':[[],[],[]]}
+  cls['clab'] = [['01','23'],['02','13'],['03','12']]
+
+  for i in range(len(train_y)):
+    if train_y[i] == 0:
+      cls['ty'][0].append([1, 0])
+      cls['ty'][1].append([1, 0])
+      cls['ty'][2].append([1, 0])
+    elif train_y[i] == 1:
+      cls['ty'][0].append([1, 0])
+      cls['ty'][1].append([0, 1])
+      cls['ty'][2].append([0, 1])
+    elif train_y[i] == 2:      
+      cls['ty'][0].append([0, 1])
+      cls['ty'][1].append([1, 0])
+      cls['ty'][2].append([0, 1])
+    elif train_y[i] == 3:
+      cls['ty'][0].append([0, 1])
+      cls['ty'][1].append([0, 1])
+      cls['ty'][2].append([1, 0])
+  
+  for i in range(len(test_y)):
+    if test_y[i] == 0:
+      cls['vy'][0].append([1, 0])
+      cls['vy'][1].append([1, 0])
+      cls['vy'][2].append([1, 0])
+    elif test_y[i] == 1:
+      cls['vy'][0].append([1, 0])
+      cls['vy'][1].append([0, 1])
+      cls['vy'][2].append([0, 1])
+    elif test_y[i] == 2:      
+      cls['vy'][0].append([0, 1])
+      cls['vy'][1].append([1, 0])
+      cls['vy'][2].append([0, 1])
+    elif test_y[i] == 3:
+      cls['vy'][0].append([0, 1])
+      cls['vy'][1].append([0, 1])
+      cls['vy'][2].append([1, 0])
+
+  return cls
+
+def trick_dac(train_x, test_x, train_y, test_y):
+  # divide and conquer
   cls = {'clab': [], 'fs': 250, 'tx':[[],[],[]], 'ty':[[],[],[]], 'vx':[[],[],[]], 'vy':[[],[],[]]}
   cls['clab'] = [['01','23'],['02','13'],['03','12']]
+  for i in range(len(train_y)):
+    if train_y[i] == 0:
+      cls['tx'][0].append(train_x[i])
+      cls['ty'][0].append([1, 0])
+      cls['tx'][1].append(train_x[i])
+      cls['ty'][1].append([1, 0])
+      cls['tx'][1].append(train_x[i])
+      cls['ty'][1].append([1, 0]) 
+  
+
+  return 1
+
+def trick_pw():
+  # pair wise
+  return 1
+
+def trick_ovr():
+  # one versus rest
+  cls = {'clab': [], 'fs': 250, 'tx':[[],[],[]], 'ty':[[],[],[]], 'vx':[[],[],[]], 'vy':[[],[],[]]}
+  cls['clab'] = [['0','123'],['1','13'],['03','12']]
   for i in range(len(train_y)):
     if train_y[i] == 0:
       cls['tx'][0].append(train_x[i])
@@ -261,28 +324,7 @@ def trick_ori(train_x, test_x, train_y, test_y):
 
   return cls
 
-def trick_dac(train_x, test_x, train_y, test_y):
-  # divide and conquer
-  cls = {'clab': [], 'fs': 250, 'tx':[[],[],[]], 'ty':[[],[],[]], 'vx':[[],[],[]], 'vy':[[],[],[]]}
-  cls['clab'] = [['01','23'],['02','13'],['03','12']]
-  for i in range(len(train_y)):
-    if train_y[i] == 0:
-      cls['tx'][0].append(train_x[i])
-      cls['ty'][0].append([1, 0])
-      cls['tx'][1].append(train_x[i])
-      cls['ty'][1].append([1, 0])
-      cls['tx'][1].append(train_x[i])
-      cls['ty'][1].append([1, 0]) 
-  
 
-  return 1
-
-def trick_pw():
-  # pair wise
-  return 1
-
-def trick_ovr():
-  # one versus rest
   return 1
 
 
@@ -305,11 +347,6 @@ def gen_tscsp_trick(sub):
     cls = trick_ori(train_x, test_x, np.array(y)[train_idx].argmax(axis=1), np.array(y)[test_idx].argmax(axis=1)) 
     scipy.io.savemat('competition/trick/ori_3.5_0.5/' + sub + '_' + str(k) + '.mat', {'cls': cls})
     k += 1
-
-
-
-
-
 
 def arr_flatten(x):
   new_x = []
