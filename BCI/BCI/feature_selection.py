@@ -56,13 +56,28 @@ def fb_mibif_with_csp(x, y, fb_csp):
 
 def lsvm_filter(x, y):
   #x = np.array(x)[:,:,18:]
-  scores = []
-  for i in range(len(x[0][0])):
-    sub_x = np.transpose(np.array(x[:,:,i]))
-    clf = SVC(kernel='linear')
-    clf.fit(sub_x, y)
-    scores.append(clf.score(sub_x, y))
+  scores = np.zeros(x.shape[-1])
+
+  kv = BCI.gen_kv_idx(BCI.lab_inv_translator(y, 5))
+  for train_idx, test_idx in kv:
+    for i in range(x.shape[-1]):
+      x_train, y_train = x[train_idx,:,i], y[train_idx]
+      x_test, y_test = x[test_idx,:,i], y[test_idx]
+      clf = SVC(kernel='linear')
+      clf.fit(x_train, y_train)
+      scores[i] += clf.score(x_test, y_test)
   return np.array(scores).argmax()
+    
+def all_features(x):
+  new_x = []
+  for i in range(x.shape[0]):
+    new_x.append(x[i,:,:].flatten())
+  return np.array(new_x)
+  
+
+
+
+  
 
 def lsvm_filter_pp(x1, y1, x2, y2):
   scores = []
@@ -91,32 +106,37 @@ def lsvm_filter_pp2(x, y):
   return np.array(scores).argmax()
 
 def mibif_filter(x, y):
-  y_ = y.argmax(axis=1)
-  xs = [[], [], [], []]
-  for i in range(x.shape[1]):
-    xs[y_[i]].append(x[:,i,:])
-  mis = np.zeros((len(xs), len(xs[0]), len(xs[0][0])))
+  #y_ = y.argmax(axis=1)
+  xs = [[], [], [], [], []]
+  for i in range(x.shape[0]):
+    xs[y[i]].append(x[i,:,:])
+  mis = np.zeros((len(xs), len(xs[0]), len(xs[0][0][0])))
   for i in range(len(xs)): # class number
     for j in range(len(xs[i])): # epoch count
-      for k in range(len(xs[i][j])): # filter number
-        one = xs[i][j][k]
+      for k in range(len(xs[i][j][0])): # filter number
+        one = xs[i][j][:,k]
         rest = []
         for l in range(len(xs)):
           if i == l: continue
-          try: rest.extend(xs[l][j][k])
+          try: rest.extend(xs[l][j][:,k])
           except: continue
-        mis[i][j][k] = mutual_information(one, np.array(rest))
+        try:
+          mis[i][j][k] = mutual_information(one, np.array(rest))
+        except:
+          break
   return np.sum(np.sum(mis, axis=1), axis=0).argmax()
 
+
+
 def lsvm_wrapper(x, y):
-  max_csp = np.zeros((x.shape[0]))
-  for i in range(x.shape[0]):
-    result_feature=np.zeros((1, x.shape[-1]))
+  max_csp = np.zeros((x.shape[2]))
+  for i in range(x.shape[2]):
+    result_feature=np.zeros((1, x.shape[0]))
     svm = SVR(kernel='linear')
     rfe = RFE(estimator=svm, n_features_to_select=1, step=1)
-    rfe = rfe.fit(x[i], y.argmax(axis=1))
+    rfe = rfe.fit(x[:,:,i], y)
     
-    result_feature =np.transpose(rfe.transform(x[i]))
+    result_feature =np.transpose(rfe.transform(x[:,:,i]))
     max_csp[i] = np.max(result_feature)
   return np.argmax(max_csp)
 

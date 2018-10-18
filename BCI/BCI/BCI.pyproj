@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>d2993ee1-3294-4fe5-ba86-1d770bb3490b</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Com_test.py</StartupFile>
+    <StartupFile>multi.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,6 +23,12 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="multi.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="WT.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="BCI.py" />
     <Compile Include="CFC.py">
       <SubType>Code</SubType>

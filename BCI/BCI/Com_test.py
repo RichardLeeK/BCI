@@ -239,20 +239,46 @@ def trick_ori(train_x, test_x, train_y, test_y):
   return cls
 
 def trick_dac(train_x, test_x, train_y, test_y):
-  # divide and conquer
-  cls = {'clab': [], 'fs': 250, 'tx':[[],[],[]], 'ty':[[],[],[]], 'vx':[[],[],[]], 'vy':[[],[],[]]}
+  cls = {'clab': [], 'fs': 250, 'tx':train_x, 'ty':[[],[],[]], 'vx':test_x, 'vy':[[],[],[]]}
   cls['clab'] = [['01','23'],['02','13'],['03','12']]
+
   for i in range(len(train_y)):
     if train_y[i] == 0:
-      cls['tx'][0].append(train_x[i])
       cls['ty'][0].append([1, 0])
-      cls['tx'][1].append(train_x[i])
       cls['ty'][1].append([1, 0])
-      cls['tx'][1].append(train_x[i])
-      cls['ty'][1].append([1, 0]) 
+      cls['ty'][2].append([1, 0])
+    elif train_y[i] == 1:
+      cls['ty'][0].append([1, 0])
+      cls['ty'][1].append([0, 1])
+      cls['ty'][2].append([0, 1])
+    elif train_y[i] == 2:      
+      cls['ty'][0].append([0, 1])
+      cls['ty'][1].append([1, 0])
+      cls['ty'][2].append([0, 1])
+    elif train_y[i] == 3:
+      cls['ty'][0].append([0, 1])
+      cls['ty'][1].append([0, 1])
+      cls['ty'][2].append([1, 0])
   
+  for i in range(len(test_y)):
+    if test_y[i] == 0:
+      cls['vy'][0].append([1, 0])
+      cls['vy'][1].append([1, 0])
+      cls['vy'][2].append([1, 0])
+    elif test_y[i] == 1:
+      cls['vy'][0].append([1, 0])
+      cls['vy'][1].append([0, 1])
+      cls['vy'][2].append([0, 1])
+    elif test_y[i] == 2:      
+      cls['vy'][0].append([0, 1])
+      cls['vy'][1].append([1, 0])
+      cls['vy'][2].append([0, 1])
+    elif test_y[i] == 3:
+      cls['vy'][0].append([0, 1])
+      cls['vy'][1].append([0, 1])
+      cls['vy'][2].append([1, 0])
 
-  return 1
+  return cls
 
 def trick_pw():
   # pair wise
@@ -260,72 +286,46 @@ def trick_pw():
 
 def trick_ovr():
   # one versus rest
-  cls = {'clab': [], 'fs': 250, 'tx':[[],[],[]], 'ty':[[],[],[]], 'vx':[[],[],[]], 'vy':[[],[],[]]}
-  cls['clab'] = [['0','123'],['1','13'],['03','12']]
+  cls = {'clab': [], 'fs': 250, 'tx':train_x, 'ty':[[],[],[]], 'vx':test_x, 'vy':[[],[],[]]}
+  cls['clab'] = [['01','23'],['02','13'],['03','12']]
+
   for i in range(len(train_y)):
     if train_y[i] == 0:
-      cls['tx'][0].append(train_x[i])
       cls['ty'][0].append([1, 0])
-      cls['tx'][1].append(train_x[i])
       cls['ty'][1].append([1, 0])
-      cls['tx'][2].append(train_x[i])
       cls['ty'][2].append([1, 0])
     elif train_y[i] == 1:
-      cls['tx'][0].append(train_x[i])
       cls['ty'][0].append([1, 0])
-      cls['tx'][1].append(train_x[i])
       cls['ty'][1].append([0, 1])
-      cls['tx'][2].append(train_x[i])
       cls['ty'][2].append([0, 1])
     elif train_y[i] == 2:      
-      cls['tx'][0].append(train_x[i])
       cls['ty'][0].append([0, 1])
-      cls['tx'][1].append(train_x[i])
       cls['ty'][1].append([1, 0])
-      cls['tx'][2].append(train_x[i])
       cls['ty'][2].append([0, 1])
     elif train_y[i] == 3:
-      cls['tx'][0].append(train_x[i])
       cls['ty'][0].append([0, 1])
-      cls['tx'][1].append(train_x[i])
       cls['ty'][1].append([0, 1])
-      cls['tx'][2].append(train_x[i])
       cls['ty'][2].append([1, 0])
   
   for i in range(len(test_y)):
     if test_y[i] == 0:
-      cls['vx'][0].append(test_x[i])
       cls['vy'][0].append([1, 0])
-      cls['vx'][1].append(test_x[i])
       cls['vy'][1].append([1, 0])
-      cls['vx'][2].append(test_x[i])
       cls['vy'][2].append([1, 0])
     elif test_y[i] == 1:
-      cls['vx'][0].append(test_x[i])
       cls['vy'][0].append([1, 0])
-      cls['vx'][1].append(test_x[i])
       cls['vy'][1].append([0, 1])
-      cls['vx'][2].append(test_x[i])
       cls['vy'][2].append([0, 1])
     elif test_y[i] == 2:      
-      cls['vx'][0].append(test_x[i])
       cls['vy'][0].append([0, 1])
-      cls['vx'][1].append(test_x[i])
       cls['vy'][1].append([1, 0])
-      cls['vx'][2].append(test_x[i])
       cls['vy'][2].append([0, 1])
     elif test_y[i] == 3:
-      cls['vx'][0].append(test_x[i])
       cls['vy'][0].append([0, 1])
-      cls['vx'][1].append(test_x[i])
       cls['vy'][1].append([0, 1])
-      cls['vx'][2].append(test_x[i])
       cls['vy'][2].append([1, 0])
 
   return cls
-
-
-  return 1
 
 
 
@@ -356,6 +356,73 @@ def arr_flatten(x):
 
 
 def classification(sub):
+  temporal_size = 9
+  import matplotlib.pyplot as plt
+  plt.rcParams["font.family"] = "Times New Roman"
+  import seaborn as sns; sns.set()
+  res_val = np.zeros((9, temporal_size))
+
+  for i in range(1, 6):
+    train_data = scipy.io.loadmat('competition/rev_3.5_0.5/' + sub + '_' + str(i) + '_train.mat')
+    test_data = scipy.io.loadmat('competition/rev_3.5_0.5/' + sub + '_' + str(i) + '_test.mat')
+    train_x = np.transpose(train_data['train'][0][0][0])
+    train_y = np.transpose(train_data['train'][0][0][1])
+    test_x = np.transpose(test_data['test'][0][0][0])
+    test_y = np.transpose(test_data['test'][0][0][1])
+
+    t_train_x = []; t_test_x = [];
+    for k in range(0, 9):
+      for j in range(0, temporal_size):
+        t_train_x.append(arr_flatten(train_x[:,j,:,k]))
+        t_test_x.append(arr_flatten(test_x[:,j,:,k]))
+
+    import feature_selection as FS
+    opt_idx = FS.lsvm_wrapper(np.array(t_train_x), train_y)
+
+    cur_train_x = t_train_x[opt_idx]
+    cur_test_x = t_test_x[opt_idx]
+    lda = LinearDiscriminantAnalysis(solver='lsqr', shrinkage='auto')
+    lda.fit(cur_train_x, train_y.argmax(axis=1))
+    y_predict = lda.predict(cur_test_x)
+    coh = cohen_kappa_score(test_y.argmax(axis=1), y_predict)
+    acc = accuracy_score(test_y.argmax(axis=1), y_predict)
+    pre = precision_score(test_y.argmax(axis=1), y_predict, average='macro')
+    rec = recall_score(test_y.argmax(axis=1), y_predict, average='macro')
+    f1 = f1_score(test_y.argmax(axis=1), y_predict, average='macro')
+    sen = str(coh) + ',' + str(acc) + ',' + str(pre) + ',' + str(rec) + ',' + str(f1)
+    pen = open('LSVM_3.5_0.5.csv', 'a')
+    pen.write('SVM,' + sub + ',' + str(i) + ',' + str(j) + ',' + sen + '\n')
+    pen.close()
+  """
+    for j in range(len(t_test_x)):
+      cur_train_x = t_train_x[j]
+      cur_test_x = t_test_x[j]
+      lda = LinearDiscriminantAnalysis(solver='lsqr', shrinkage='auto')
+      lda.fit(cur_train_x, train_y.argmax(axis=1))
+      y_predict = lda.predict(cur_test_x)
+      coh = cohen_kappa_score(test_y.argmax(axis=1), y_predict)
+      acc = accuracy_score(test_y.argmax(axis=1), y_predict)
+      pre = precision_score(test_y.argmax(axis=1), y_predict, average='macro')
+      rec = recall_score(test_y.argmax(axis=1), y_predict, average='macro')
+      f1 = f1_score(test_y.argmax(axis=1), y_predict, average='macro')
+      sen = str(coh) + ',' + str(acc) + ',' + str(pre) + ',' + str(rec) + ',' + str(f1)
+      #pen = open('total_2_0.5.csv', 'a')
+      #pen.write('SVM,' + sub + ',' + str(i) + ',' + str(j) + ',' + sen + '\n')
+      #pen.close()
+      y_val = j % temporal_size
+      x_val = int(j / temporal_size)
+      res_val[x_val, y_val] += coh
+  res_val /= 5
+  plt.rcParams["font.family"] = "Times New Roman"
+  ax = sns.heatmap(res_val, cmap="BuGn", vmin=0.1, vmax=0.85, square=True, annot=True)
+  plt.savefig('fig/4.5_0.5/' + sub + '.png', format='png', dpi=1000)
+  plt.close()
+  """
+  print('abc')
+  
+
+
+def classification_trick(sub):
   temporal_size = 7
   import matplotlib.pyplot as plt
   plt.rcParams["font.family"] = "Times New Roman"
@@ -399,8 +466,6 @@ def classification(sub):
   plt.savefig('fig/4.5_0.5/' + sub + '.png', format='png', dpi=1000)
   plt.close()
   print('abc')
-
-
 
       
     
@@ -641,4 +706,5 @@ if __name__ == '__main__':
     #load_tscsp(str(i))
     #classification(str(i))
     #gen_tscsp(str(i))
-    gen_tscsp_trick(str(i))
+    #gen_tscsp_trick(str(i))
+    classification(str(i))
