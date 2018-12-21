@@ -7,7 +7,8 @@ from keras.layers.advanced_activations import PReLU
 import numpy as np
 
 def RCL_block(l_settings, l, pool=True):
-    input_num_filters = l_settings.output_shape[1]
+    #input_num_filters = l_settings.output_shape[1]
+    input_num_filters = 3
     conv1 = Conv2D(input_num_filters, (1, 1), padding='same')
     stack1 = conv1(l)   	
     stack2 = BatchNormalization()(stack1)
@@ -36,7 +37,7 @@ def RCL_block(l_settings, l, pool=True):
     if pool:
       stack15 = MaxPool2D((2, 2), padding='same')(stack15)
     #stack16 = stack15
-    stack16 = Dropout(0.3)(stack15)
+    stack16 = Dropout(0.5)(stack15)
             
     return stack16
 
@@ -81,7 +82,7 @@ def RCL_3d_block(l_settings, l, pool=True):
 
 def create_model(resize, output_dim=3, nb_layer=3):
   input = Input(resize)
-  conv = Conv2D(128, (3, 3), padding='same', activation='relu')
+  conv = Conv2D(4, (3, 3), padding='same', activation='relu')
   l = conv(input)
 
   for i in range(nb_layer):
@@ -94,7 +95,7 @@ def create_model(resize, output_dim=3, nb_layer=3):
   out = Dense(3, activation='softmax')(out)
   model = Model(input = input, output = out)
   print(model.summary())
-  model.compile(loss = 'categorical_crossentropy', optimizer = 'Adadelta', metrics = ['accuracy'])
+  model.compile(loss = 'binary_crossentropy', optimizer = 'Adam', metrics = ['accuracy'])
   return model
 
 def create_3d_model(resize, output_dim=3, nb_layer=3):

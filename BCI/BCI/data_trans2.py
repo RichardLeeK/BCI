@@ -138,6 +138,73 @@ def classification(sub, path):
 
   print('abc')
 
+def classification_1105(sub, path):
+  # new version (merging)
+  import seaborn as sns; sns.set()
+  train = scipy.io.loadmat(path + sub + '-train.mat')
+  test = scipy.io.loadmat(path + sub + '-test.mat')
+
+  train_fold = train['total_train'][0]
+  test_fold = test['total_test'][0]
+
+  total_res_val = np.zeros((9, 21))
+  total_res_val2 = np.zeros((9, 21))
+  txs = []; tys= []; vxs = []; vys = [];
+  for i in range(6): # temporal dividing    
+    temporal_size = train_fold[i][0][0][0][0].shape[1]
+    res_val = np.zeros((9, temporal_size))
+    res_val2= np.zeros((9, temporal_size))
+    for j in range(5): # 5-fold cross validation
+      train_x = np.transpose(train_fold[i][0][0][0][j])
+      train_y = np.transpose(train_fold[i][0][0][1])
+
+      test_x = np.transpose(test_fold[i][0][0][0][j])
+      test_y = np.transpose(test_fold[i][0][0][1])
+
+      t_train_x = []; t_test_x = [];
+      for k in range(9):
+        for l in range(temporal_size):
+          
+          t_train_x.append(Com_test.arr_flatten(train_x[:,:,l,k]))
+          t_test_x.append(Com_test.arr_flatten(test_x[:,:,l,k]))
+      for k in range(len(t_test_x)):
+        cur_train_x = t_train_x[k]
+        cur_test_x = t_test_x[k]
+        lda = LinearDiscriminantAnalysis(solver='lsqr', shrinkage='auto')
+        lda.fit(cur_train_x, train_y.argmax(axis=1))
+        y_predict = lda.predict(cur_test_x)
+        coh = cohen_kappa_score(test_y.argmax(axis=1), y_predict)
+        acc = lda.score(cur_test_x, test_y.argmax(axis=1))
+        y_val = k % temporal_size
+        x_val = int(k / temporal_size)
+        res_val[x_val, y_val] += coh
+        res_val2[x_val, y_val] += acc
+        total_res_val[x_val, int(-0.5*i*i + 6.5*i + y_val)] += coh
+        total_res_val2[x_val, int(-0.5*i*i + 6.5*i + y_val)] += acc
+    res_val /= 5
+    res_val2 /= 5
+  total_res_val /= 5
+  total_res_val2 /= 5
+  plt.rcParams["font.family"] = "Times New Roman"
+  plt.figure(figsize=(12, 4))
+  ax = sns.heatmap(total_res_val, cmap="BuGn", vmin=0.1, vmax=0.85, square=True, annot=True)
+  plt.savefig('KIST/grasp/' + sub + 'coh.png', format='png', dpi=1000)
+  plt.close()
+  plt.figure(figsize=(12, 4))
+  ax = sns.heatmap(total_res_val2, cmap="BuGn", vmin=0.1, vmax=0.85, square=True, annot=True)
+  plt.savefig('KIST/grasp/' + sub + 'acc.png', format='eps', dpi=1000)
+  plt.close()
+
+#  pen = open('KIST/grasp/res.csv', 'a')
+#  pen.write(sub + ',' + str(total_res_val.max()) + ',' + str(total_res_val2.max()) + '\n')
+#  pen.close()
+
+
+
+  print('abc')
+
+
+
 def classification_tdp(sub, path):
   import seaborn as sns; sns.set()
   train = scipy.io.loadmat(path + sub + '-train.mat')
@@ -262,8 +329,20 @@ def comp_to_mat(sub):
   print("abc")
 
 if __name__ == '__main__':
-  for i in range(1, 10):
-    comp_to_mat(str(i))
+  path = 'E:/Richard/TSOSPData/grasp/'
+#  files_raw = os.listdir(path)
+#  files = []
+#  for f in files_raw:
+#    files.append(f.split('-')[0])
+#  files = list(set(files))
+
+#  for f in files:
+#    classification_1105(f, path)
+  classification_1105('20180615_jgyoon3_grasp_MI.mat', path)
+
+
+#  for i in range(1, 10):
+#    comp_to_mat(str(i))
     
 
   

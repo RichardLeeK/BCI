@@ -23,7 +23,16 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="comparative_analysis.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="multi.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RCNN_3rd.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TSOSP.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="WT.py">

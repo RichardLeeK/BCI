@@ -196,6 +196,22 @@ def gen_tscsp(sub='1'):
     scipy.io.savemat('competition/ori_4_0.5/' + sub + '_' + str(k) + '.mat', res)
     k += 1
 
+def gen_cnt_data():
+  import os
+  os.chdir('E:/Richard/Competition/')
+  for i in range(1, 10):
+    path = 'raw/A0'+ str(i) + 'T.npz'
+    cnt, mrk, dur, y = Competition.load_cnt_mrk_y(path)
+    f_cnt = CSP.arr_bandpass_filter(cnt, 8, 30, 250, 5)
+    epo = cnt_to_epo(f_cnt, mrk, dur)
+    epo, y_ = out_label_remover(epo, y)
+    new_epo = []
+    for v in epo:
+      new_epo.append(v[750:1500,:])
+    new_epo = np.array(new_epo)
+    data = {'x': new_epo, 'y': y_}
+    scipy.io.savemat('epo_f/A0' + str(i), data)
+
 def trick_ori(train_x, test_x, train_y, test_y):
   cls = {'clab': [], 'fs': 250, 'tx':train_x, 'ty':[[],[],[]], 'vx':test_x, 'vy':[[],[],[]]}
   cls['clab'] = [['01','23'],['02','13'],['03','12']]
@@ -691,8 +707,117 @@ def RCNN_batch(sub = '1', epoch = 100):
     pen.close()
     fold += 1
 
+def test_api_():
+  import os
+  os.chdir('E:/Richard/Competition/4c/')
+  for i in range(1, 10):
+    csp = scipy.io.loadmat('csp/A0'+str(i)+'.mat')['csp'][0][0]
+    tdp = scipy.io.loadmat('tdp/A0'+str(i)+'.mat')['tdp'][0][0]
+    psd = scipy.io.loadmat('psd/A0'+str(i)+'.mat')['psd'][0][0]
+    for j in range(4):
 
-    
+      ctx = np.transpose(csp[0][j]);
+      cty = np.transpose(csp[1][j]).argmax(axis=1);
+      cvx = np.transpose(csp[2][j]);
+      cvy = np.transpose(csp[3][j]).argmax(axis=1);
+
+      ttx = np.transpose(tdp[0][j]);
+      tty = np.transpose(tdp[1][j]).argmax(axis=1);
+      tvx = np.transpose(tdp[2][j]);
+      tvy = np.transpose(tdp[3][j]).argmax(axis=1);
+
+      ptx = np.transpose(psd[0][j]);
+      pty = np.transpose(psd[1][j]).argmax(axis=1);
+      pvx = np.transpose(psd[2][j]);
+      pvy = np.transpose(psd[3][j]).argmax(axis=1);
+
+      from sklearn import svm, linear_model
+      from sklearn import ensemble
+
+      mode = ['lsvm', 'ksvm', 'gb', 'srlda']
+      data = ['csp', 'tdp', 'psd']
+
+      for cls in mode:
+        for d in data:
+          if cls == 'lsvm': lda = svm.LinearSVC()
+          elif cls == 'ksvm': lda = svm.SVC(kernel='linear')
+          elif cls == 'gb': lda = ensemble.GradientBoostingClassifier()
+          elif cls == 'srlda': lda = LinearDiscriminantAnalysis(solver='lsqr', shrinkage='auto')
+          if d == 'csp':
+            tx = ctx; ty = cty;
+            vx = cvx; vy = cvy;
+          elif d == 'tdp':
+            tx = ttx; ty = tty;
+            vx = tvx; vy = tvy;
+          elif d == 'psd':
+            tx = ptx; ty = pty;
+            vx = pvx; vy = pvy;
+          lda.fit(tx, ty)
+          y_predict = lda.predict(vx)
+          coh = cohen_kappa_score(vy, y_predict)
+          acc = accuracy_score(vy, y_predict)
+          pen = open('res/res_' + cls + '_' + d + '_f.csv', 'a')
+          pen.write(str(i) + ',' + str(j) + ',' + str(coh) + ',' + str(acc) + '\n')
+          pen.close()
+
+
+
+def result_merger(mode='a'):
+  import os
+  os.chdir('E:/Richard/Competition/3c_f/')
+  files = os.listdir('res')
+  res_dic = {}
+  for file in files:
+    sf = file.split('_')
+    fe = sf[-2]
+    if fe not in res_dic:
+      res_dic[fe] = {}
+    if sf[1] not in res_dic[fe]:
+      res_dic[fe][sf[1]] = []
+    f = open('res/' + file)
+    lines = f.readlines()
+    for line in lines:
+      if mode == 'a': m_idx = -1
+      elif mode == 'k': m_idx = -2
+      res_dic[fe][sf[1]].append(float(line.split(',')[m_idx]))
+  pen = open('merged_result_' + mode + '.csv', 'w')
+  means = [[],[],[],[],[],[],[],[],[],[],[],[]]; stds = [[],[],[],[],[],[],[],[],[],[],[],[]];
+  import multi as mt
+  for i in range(0, 9):
+    sen = ''
+    sen += mt.get_mean_std(res_dic['csp']['lsvm'][i*4:(i+1)*4]) + ','
+    sen += mt.get_mean_std(res_dic['csp']['ksvm'][i*4:(i+1)*4]) + ','
+    sen += mt.get_mean_std(res_dic['csp']['gb'][i*4:(i+1)*4]) + ','
+    sen += mt.get_mean_std(res_dic['csp']['srlda'][i*4:(i+1)*4]) + ','
+
+    sen += mt.get_mean_std(res_dic['tdp']['lsvm'][i*4:(i+1)*4]) + ','
+    sen += mt.get_mean_std(res_dic['tdp']['ksvm'][i*4:(i+1)*4]) + ','
+    sen += mt.get_mean_std(res_dic['tdp']['gb'][i*4:(i+1)*4]) + ','
+    sen += mt.get_mean_std(res_dic['tdp']['srlda'][i*4:(i+1)*4]) + ','
+
+    sen += mt.get_mean_std(res_dic['psd']['lsvm'][i*4:(i+1)*4]) + ','
+    sen += mt.get_mean_std(res_dic['psd']['ksvm'][i*4:(i+1)*4]) + ','
+    sen += mt.get_mean_std(res_dic['psd']['gb'][i*4:(i+1)*4]) + ','
+    sen += mt.get_mean_std(res_dic['psd']['srlda'][i*4:(i+1)*4]) + ','
+
+    means[0].append(mt.get_mean(res_dic['csp']['lsvm'][i*4:(i+1)*4])); stds[0].append(mt.get_std(res_dic['csp']['lsvm'][i*4:(i+1)*4]))
+    means[1].append(mt.get_mean(res_dic['csp']['ksvm'][i*4:(i+1)*4])); stds[1].append(mt.get_std(res_dic['csp']['ksvm'][i*4:(i+1)*4]))
+    means[2].append(mt.get_mean(res_dic['csp']['gb'][i*4:(i+1)*4])); stds[2].append(mt.get_std(res_dic['csp']['gb'][i*4:(i+1)*4]))
+    means[3].append(mt.get_mean(res_dic['csp']['srlda'][i*4:(i+1)*4])); stds[3].append(mt.get_std(res_dic['csp']['srlda'][i*4:(i+1)*4]))
+    means[4].append(mt.get_mean(res_dic['tdp']['lsvm'][i*4:(i+1)*4])); stds[4].append(mt.get_std(res_dic['tdp']['lsvm'][i*4:(i+1)*4]))
+    means[5].append(mt.get_mean(res_dic['tdp']['ksvm'][i*4:(i+1)*4])); stds[5].append(mt.get_std(res_dic['tdp']['ksvm'][i*4:(i+1)*4]))
+    means[6].append(mt.get_mean(res_dic['tdp']['gb'][i*4:(i+1)*4])); stds[6].append(mt.get_std(res_dic['tdp']['gb'][i*4:(i+1)*4]))
+    means[7].append(mt.get_mean(res_dic['tdp']['srlda'][i*4:(i+1)*4])); stds[7].append(mt.get_std(res_dic['tdp']['srlda'][i*4:(i+1)*4]))
+    means[8].append(mt.get_mean(res_dic['psd']['lsvm'][i*4:(i+1)*4])); stds[8].append(mt.get_std(res_dic['psd']['lsvm'][i*4:(i+1)*4]))
+    means[9].append(mt.get_mean(res_dic['psd']['ksvm'][i*4:(i+1)*4])); stds[9].append(mt.get_std(res_dic['psd']['ksvm'][i*4:(i+1)*4]))
+    means[10].append(mt.get_mean(res_dic['psd']['gb'][i*4:(i+1)*4])); stds[10].append(mt.get_std(res_dic['psd']['gb'][i*4:(i+1)*4]))
+    means[11].append(mt.get_mean(res_dic['psd']['srlda'][i*4:(i+1)*4])); stds[11].append(mt.get_std(res_dic['psd']['srlda'][i*4:(i+1)*4]))
+    pen.write(sen + '\n')
+  sen = ''
+  for n in range(len(means)):
+    sen += str(round(np.mean(np.array(means[n])), 1)) + '±' +  str(round(np.mean(np.array(stds[i])), 1)) + ','
+  pen.write(sen)
+  pen.close()
 
 if __name__ == '__main__':
   #new_numpy_to_mat()
@@ -700,11 +825,14 @@ if __name__ == '__main__':
   #gen_fbcsp()
   #load_fbcsp()
   #gen_tscsp()
-
-  for i in range(1, 10):
+  #gen_cnt_data()
+  #test_api_()
+  result_merger()
+  print('abc')
+  #for i in range(1, 10):
     #gen_tscsp(str(i))
     #load_tscsp(str(i))
     #classification(str(i))
     #gen_tscsp(str(i))
     #gen_tscsp_trick(str(i))
-    classification(str(i))
+    #classification(str(i))
