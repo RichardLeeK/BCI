@@ -89,6 +89,23 @@ def y_generator(y):
     elif v == 'left': new_y.append(3)
   return new_y
 
+def cnt_to_epo(cnt, mrk, dur):
+  epo = []
+  for i in range(len(mrk)):
+    epo.append(np.array(cnt[mrk[i] : mrk[i] + dur[i]]))
+  epo = np.array(epo)
+  return epo
+
+def out_label_remover(x, y):
+  new_x = []; new_y = [];
+  for i in range(len(y)):
+    if y[i] == 4 or y[i] == 5:
+      None
+    else:
+      new_x.append(np.array(x[i]))
+      new_y.append(int(y[i]))
+  return np.array(new_x), np.array(new_y)
+
 
 if __name__ == '__main__':
   path = 'data/'
